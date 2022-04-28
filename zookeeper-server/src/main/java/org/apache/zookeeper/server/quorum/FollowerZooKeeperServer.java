@@ -107,6 +107,7 @@ public class FollowerZooKeeperServer extends LearnerZooKeeperServer {
                     + Long.toHexString(firstElementZxid));
             System.exit(12);
         }
+        // ack to Leader
         Request request = pendingTxns.remove();
         commitProcessor.commit(request);
     }

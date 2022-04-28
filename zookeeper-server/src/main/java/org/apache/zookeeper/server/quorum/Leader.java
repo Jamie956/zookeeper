@@ -391,6 +391,7 @@ public class Leader {
                     Socket s = null;
                     boolean error = false;
                     try {
+                        //等待接收 Follower 的状态同步申请
                         s = ss.accept();
 
                         // start with the initLimit, once the ack is processed
@@ -401,6 +402,7 @@ public class Leader {
                         BufferedInputStream is = new BufferedInputStream(
                                 s.getInputStream());
                         LearnerHandler fh = new LearnerHandler(s, is, Leader.this);
+                        //启动线程
                         fh.start();
                     } catch (SocketException e) {
                         error = true;
@@ -476,6 +478,7 @@ public class Leader {
 
             // Start thread that waits for connection requests from
             // new followers.
+            //Leader 和 Follower 状态同步
             cnxAcceptor = new LearnerCnxAcceptor();
             cnxAcceptor.start();
 
@@ -565,6 +568,7 @@ public class Leader {
                  return;
              }
 
+             //启动 Leader 服务
              startZkServer();
              
             /**
@@ -1313,7 +1317,8 @@ public class Leader {
         if (designatedLeader != self.getId()) {
             allowedToCommit = false;
         }
-        
+
+        //
         zk.startup();
         /*
          * Update the election vote here to ensure that all members of the

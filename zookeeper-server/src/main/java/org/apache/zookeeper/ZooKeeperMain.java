@@ -74,7 +74,7 @@ import org.apache.zookeeper.admin.ZooKeeperAdmin;
  *
  */
 @InterfaceAudience.Public
-public class ZooKeeperMain {
+public class ZooKeeperMain { //客户端启动
     private static final Logger LOG = LoggerFactory.getLogger(ZooKeeperMain.class);
     static final Map<String,String> commandMap = new HashMap<String,String>( );
     static final Map<String,CliCommand> commandMapCli =

@@ -261,6 +261,7 @@ public class QuorumCnxManager {
                             boolean listenOnAllIPs,
                             int quorumCnxnThreadsSize,
                             boolean quorumSaslAuthEnabled) {
+        //创建接收队列
         this.recvQueue = new ArrayBlockingQueue<Message>(RECV_CAPACITY);
         this.queueSendMap = new ConcurrentHashMap<Long, ArrayBlockingQueue<ByteBuffer>>();
         this.senderWorkerMap = new ConcurrentHashMap<Long, SendWorker>();
@@ -340,6 +341,7 @@ public class QuorumCnxManager {
      */
     public void initiateConnection(final Socket sock, final Long sid) {
         try {
+            //
             startConnection(sock, sid);
         } catch (IOException e) {
             LOG.error("Exception while connecting, id: {}, addr: {}, closing learner connection",
@@ -400,7 +402,9 @@ public class QuorumCnxManager {
 
     private boolean startConnection(Socket sock, Long sid)
             throws IOException {
+        //输出流向服务器发送数据
         DataOutputStream dout = null;
+        //输入流读取对方发送过来的选票
         DataInputStream din = null;
         try {
             // Use BufferedOutputStream to reduce the number of IP packets. This is
@@ -440,6 +444,7 @@ public class QuorumCnxManager {
             closeSocket(sock);
             // Otherwise proceed with the connection
         } else {
+            //初始发送器和接收器
             SendWorker sw = new SendWorker(sock, sid);
             RecvWorker rw = new RecvWorker(sock, din, sid, sw);
             sw.setRecv(rw);
@@ -453,6 +458,7 @@ public class QuorumCnxManager {
             queueSendMap.putIfAbsent(sid, new ArrayBlockingQueue<ByteBuffer>(
                     SEND_CAPACITY));
 
+            //启动发送器和接收器线程
             sw.start();
             rw.start();
 
@@ -601,11 +607,11 @@ public class QuorumCnxManager {
      * Processes invoke this message to queue a message to send. Currently,
      * only leader election uses it.
      */
-    public void toSend(Long sid, ByteBuffer b) {
+    public void toSend(Long sid, ByteBuffer b) { //发送选票
         /*
          * If sending message to myself, then simply enqueue it (loopback).
          */
-        if (this.mySid == sid) {
+        if (this.mySid == sid) { //给自己投票
              b.position(0);
              addToRecvQueue(new Message(b.duplicate(), sid));
             /*
@@ -623,6 +629,7 @@ public class QuorumCnxManager {
              } else {
                  addToSendQueue(bq, b);
              }
+             //将选票发送出去
              connectOne(sid);
 
         }
@@ -664,6 +671,7 @@ public class QuorumCnxManager {
             if (quorumSaslAuthEnabled) {
                 initiateConnectionAsync(sock, sid);
             } else {
+                //
                 initiateConnection(sock, sid);
             }
             return true;
@@ -710,6 +718,7 @@ public class QuorumCnxManager {
             Map<Long, QuorumPeer.QuorumServer> lastProposedView = lastSeenQV.getAllMembers();
             if (lastCommittedView.containsKey(sid)) {
                 knownId = true;
+                //
                 if (connectOne(sid, lastCommittedView.get(sid).electionAddr))
                     return;
             }
@@ -1128,6 +1137,7 @@ public class QuorumCnxManager {
                         ArrayBlockingQueue<ByteBuffer> bq = queueSendMap
                                 .get(sid);
                         if (bq != null) {
+                            //轮训
                             b = pollSendQueue(bq, 1000, TimeUnit.MILLISECONDS);
                         } else {
                             LOG.error("No queue of incoming messages for " +
@@ -1221,6 +1231,7 @@ public class QuorumCnxManager {
                     byte[] msgArray = new byte[length];
                     din.readFully(msgArray, 0, length);
                     ByteBuffer message = ByteBuffer.wrap(msgArray);
+                    //
                     addToRecvQueue(new Message(message.duplicate(), sid));
                 }
             } catch (Exception e) {
@@ -1264,6 +1275,7 @@ public class QuorumCnxManager {
             }
         }
         try {
+            //要发送的消息加到发送队列
             queue.add(buffer);
         } catch (IllegalStateException ie) {
             // This should never happen
@@ -1326,6 +1338,7 @@ public class QuorumCnxManager {
                 }
             }
             try {
+                //将发送给自己的选票加到 revQueue 队列
                 recvQueue.add(msg);
             } catch (IllegalStateException ie) {
                 // This should never happen

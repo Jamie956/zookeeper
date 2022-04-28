@@ -155,6 +155,7 @@ public class Learner {
      */
     void readPacket(QuorumPacket pp) throws IOException {
         synchronized (leaderIs) {
+            //读取信息
             leaderIs.readRecord(pp, "packet");
         }
         if (LOG.isTraceEnabled()) {

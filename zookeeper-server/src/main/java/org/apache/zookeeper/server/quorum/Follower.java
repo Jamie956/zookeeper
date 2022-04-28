@@ -72,9 +72,12 @@ public class Follower extends Learner{
         self.end_fle = 0;
         fzk.registerJMX(new FollowerBean(this, zk), self.jmxLocalPeerBean);
         try {
+            //查找 Leader
             QuorumServer leaderServer = findLeader();            
             try {
+                //连接 Leader, sockConnect
                 connectToLeader(leaderServer.addr, leaderServer.hostname);
+                //发送 FollowerInfo 给 Leader
                 long newEpochZxid = registerWithLeader(Leader.FOLLOWERINFO);
                 if (self.isReconfigStateChange())
                    throw new Exception("learned about role change");
@@ -89,7 +92,9 @@ public class Follower extends Learner{
                 syncWithLeader(newEpochZxid);                
                 QuorumPacket qp = new QuorumPacket();
                 while (this.isRunning()) {
+                    //读取Leader 返回结果 LeaderInfo
                     readPacket(qp);
+                    //处理信息
                     processPacket(qp);
                 }
             } catch (Exception e) {
@@ -113,7 +118,7 @@ public class Follower extends Learner{
      * @param qp
      * @throws IOException
      */
-    protected void processPacket(QuorumPacket qp) throws Exception{
+    protected void  processPacket(QuorumPacket qp) throws Exception{
         switch (qp.getType()) {
         case Leader.PING:            
             ping(qp);            
@@ -138,6 +143,7 @@ public class Follower extends Learner{
             fzk.logRequest(hdr, txn);
             break;
         case Leader.COMMIT:
+            //
             fzk.commit(qp.getZxid());
             break;
             

@@ -155,6 +155,7 @@ public class PurgeTxnLog {
                 "\t"+f.getPath();
             LOG.info(msg);
             System.out.println(msg);
+            //执行删除快照和日志
             if(!f.delete()){
                 System.err.println("Failed to remove "+f.getPath());
             }

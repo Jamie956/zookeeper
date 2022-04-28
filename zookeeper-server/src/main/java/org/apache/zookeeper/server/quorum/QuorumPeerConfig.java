@@ -141,6 +141,7 @@ public class QuorumPeerConfig {
                 .build()).create(path);
                 
             Properties cfg = new Properties();
+            //读取配置文件
             FileInputStream in = new FileInputStream(configFile);
             try {
                 cfg.load(in);
@@ -175,6 +176,7 @@ public class QuorumPeerConfig {
                } finally {
                    inConfig.close();
                }
+               //配置myid 入口
                setupQuorumPeerConfig(dynamicCfg, false);
 
            } catch (IOException e) {
@@ -240,6 +242,7 @@ public class QuorumPeerConfig {
         String clientPortAddress = null;
         String secureClientPortAddress = null;
         VerifyingFileFactory vff = new VerifyingFileFactory.Builder(LOG).warnForRelativePath().build();
+        //配置文件变量初始化
         for (Entry<Object, Object> entry : zkProp.entrySet()) {
             String key = entry.getKey().toString().trim();
             String value = entry.getValue().toString().trim();
@@ -601,6 +604,7 @@ public class QuorumPeerConfig {
     void setupQuorumPeerConfig(Properties prop, boolean configBackwardCompatibilityMode)
             throws IOException, ConfigException {
         quorumVerifier = parseDynamicConfig(prop, electionAlg, true, configBackwardCompatibilityMode);
+        //配置myid
         setupMyId();
         setupClientPort();
         setupPeerType();

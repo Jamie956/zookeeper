@@ -127,9 +127,11 @@ public abstract class ServerCnxnFactory {
         String serverCnxnFactoryName =
             System.getProperty(ZOOKEEPER_SERVER_CNXN_FACTORY);
         if (serverCnxnFactoryName == null) {
+            //NIO 工厂名
             serverCnxnFactoryName = NIOServerCnxnFactory.class.getName();
         }
         try {
+            //实例化 NIO 工厂
             ServerCnxnFactory serverCnxnFactory = (ServerCnxnFactory) Class.forName(serverCnxnFactoryName)
                     .getDeclaredConstructor().newInstance();
             LOG.info("Using {} as server connection factory", serverCnxnFactoryName);

@@ -32,7 +32,7 @@ public interface TxnLog {
 
     /**
      * Setter for ServerStats to monitor fsync threshold exceed
-     * @param serverStats used to update fsyncThresholdExceedCount
+     * @param serverStats used to update fsyncThres holdExceedCount
      */
     void setServerStats(ServerStats serverStats);
     

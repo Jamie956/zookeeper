@@ -77,8 +77,10 @@ public class QuorumPeerMain {
      * @param args path to the configfile
      */
     public static void main(String[] args) {
+        //zookeeper 启动入口
         QuorumPeerMain main = new QuorumPeerMain();
         try {
+            //初始化
             main.initializeAndRun(args);
         } catch (IllegalArgumentException e) {
             LOG.error("Invalid arguments, exiting abnormally", e);
@@ -109,17 +111,21 @@ public class QuorumPeerMain {
         throws ConfigException, IOException, AdminServerException
     {
         QuorumPeerConfig config = new QuorumPeerConfig();
+        //有参数传入时，解析参数，实际上是配置文件
         if (args.length == 1) {
             config.parse(args[0]);
         }
 
         // Start and schedule the the purge task
+        //snapRetainCount 最少保留的快照个数；purgeInterval 清理快照的时间间隔
         DatadirCleanupManager purgeMgr = new DatadirCleanupManager(config
                 .getDataDir(), config.getDataLogDir(), config
                 .getSnapRetainCount(), config.getPurgeInterval());
+        //开启线程，清理快照
         purgeMgr.start();
 
         if (args.length == 1 && config.isDistributed()) {
+            //开启IO通信服务，实例化 QuorumPeer
             runFromConfig(config);
         } else {
             LOG.warn("Either no config or no quorum defined in config, running "
@@ -144,7 +150,9 @@ public class QuorumPeerMain {
           ServerCnxnFactory secureCnxnFactory = null;
 
           if (config.getClientPortAddress() != null) {
+              //实例化NIO 工厂
               cnxnFactory = ServerCnxnFactory.createFactory();
+              //打开 socket 连接
               cnxnFactory.configure(config.getClientPortAddress(),
                       config.getMaxClientCnxns(),
                       false);
@@ -201,7 +209,8 @@ public class QuorumPeerMain {
           }
           quorumPeer.setQuorumCnxnThreadsSize(config.quorumCnxnThreadsSize);
           quorumPeer.initialize();
-          
+
+          //开启服务
           quorumPeer.start();
           quorumPeer.join();
       } catch (InterruptedException e) {

@@ -223,6 +223,7 @@ public class FastLeaderElection implements Election {
                 while (!stop) {
                     // Sleeps on receive
                     try {
+                        //
                         response = manager.pollRecvQueue(3000, TimeUnit.MILLISECONDS);
                         if(response == null) continue;
 
@@ -447,6 +448,7 @@ public class FastLeaderElection implements Election {
                 this.manager = manager;
             }
 
+            //接收要发送的选票
             public void run() {
                 while (!stop) {
                     try {
@@ -466,6 +468,7 @@ public class FastLeaderElection implements Election {
              *
              * @param m     message to send
              */
+            //处理要发送的选票
             void process(ToSend m) {
                 ByteBuffer requestBuffer = buildMsg(m.state.ordinal(),
                                                     m.leader,
@@ -616,6 +619,7 @@ public class FastLeaderElection implements Election {
         proposedLeader = -1;
         proposedZxid = -1;
 
+        //创建接收和发送队列
         sendqueue = new LinkedBlockingQueue<ToSend>();
         recvqueue = new LinkedBlockingQueue<Notification>();
         this.messenger = new Messenger(manager);
@@ -658,6 +662,7 @@ public class FastLeaderElection implements Election {
     private void sendNotifications() {
         for (long sid : self.getCurrentAndNextConfigVoters()) {
             QuorumVerifier qv = self.getQuorumVerifier();
+            //创建选票
             ToSend notmsg = new ToSend(ToSend.mType.notification,
                     proposedLeader,
                     proposedZxid,
@@ -671,6 +676,7 @@ public class FastLeaderElection implements Election {
                       " (n.round), " + sid + " (recipient), " + self.getId() +
                       " (myid), 0x" + Long.toHexString(proposedEpoch) + " (n.peerEpoch)");
             }
+            //把选票放入发送队列 ...-> WorkerSender
             sendqueue.offer(notmsg);
         }
     }
@@ -879,11 +885,13 @@ public class FastLeaderElection implements Election {
 
             synchronized(this){
                 logicalclock.incrementAndGet();
+                //更新选票
                 updateProposal(getInitId(), getInitLastLoggedZxid(), getPeerEpoch());
             }
 
             LOG.info("New election. My id =  " + self.getId() +
                     ", proposed zxid=0x" + Long.toHexString(proposedZxid));
+            //广播选票
             sendNotifications();
 
             /*
